@@ -10,9 +10,10 @@ USER_DATA = {
 }
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def user():
-    return User().create(**USER_DATA)
+    user, created = User().get_or_create(**USER_DATA)
+    return user
 
 
 def test_not_logged_in(client):
@@ -68,15 +69,6 @@ def test_update(client, user):
     # authentication with new password is great success
     auth = (user.username, 'newpassword')
     resp = client.json_get(url_for('api.profile'), auth=auth)
-    assert resp.status_code == 200
-
-    # change it back after test is over so next tests work
-    new_data = {
-        'current_password': 'newpassword',
-        'password': USER_DATA['password'],
-    }
-    auth = (user.username, user.api_key)
-    resp = client.json_post(url_for('api.profile'), data=new_data, auth=auth)
     assert resp.status_code == 200
 
 

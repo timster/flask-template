@@ -3,16 +3,18 @@ from flask import url_for
 
 from flaskapi.models import User
 
-ADMIN_DATA = {
+USER_DATA = {
     'username': 'admin',
     'email': 'admin@example.com',
     'password': 'welcome',
+    'is_admin': True,
 }
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def user():
-    return User().create(is_admin=True, **ADMIN_DATA)
+    user, created = User().get_or_create(**USER_DATA)
+    return user
 
 
 def test_not_logged_in(client):

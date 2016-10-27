@@ -1,11 +1,9 @@
-import tempfile
-import os
 import base64
 import json
 
 from flask.testing import FlaskClient
 from flask.wrappers import Response
-from peewee_moves import DatabaseManager
+from peewee_moves import get_database_manager
 from werkzeug import cached_property
 import pytest
 
@@ -55,23 +53,23 @@ class TestClient(FlaskClient):
 
 
 @pytest.fixture(scope='function')
-def app(request):
-    temp_database = os.path.join(tempfile.mkdtemp(), 'test.sqlite')
-    os.environ['FLASK_DATABASE_URL'] = 'sqlite:///' + temp_database
-
-    app = create_app()
+def app(tmpdir):
+    sqlite_file = str(tmpdir.join('test.sqlite'))
+    config = {
+        'DATABASE': 'sqlite:///' + sqlite_file,
+        'TESTING': True,
+    }
+    app = create_app(config)
     app.test_client_class = TestClient
     app.response_class = TestResponse
 
     with app.test_request_context():
-        migrations = os.path.join(app.root_path, 'migrations')
-        manager = DatabaseManager(app.config['DATABASE'], directory=migrations)
-        manager.upgrade()
+        get_database_manager(app).upgrade()
 
         yield app
 
 
-@pytest.fixture()
+@pytest.fixture(scope='function')
 def client(app):
     with app.test_client() as client:
         yield client
