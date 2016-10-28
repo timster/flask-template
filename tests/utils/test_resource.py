@@ -28,7 +28,7 @@ user1 = FakeUser.create(name='tim', ssn='timssn')
 user2 = FakeUser.create(name='bob', ssn='bobssn')
 
 
-class MissingModelResource(Resource):
+class ResourceMissingModel(Resource):
     pass
 
 
@@ -36,8 +36,15 @@ class UserResource(Resource):
     model = FakeUser
 
 
+class UserResourceSub(Resource):
+    model = FakeUser
+
+    def get_items(self, obj):
+        return {'sub': obj.name}
+
+
 def test_missing_model():
-    resource = MissingModelResource()
+    resource = ResourceMissingModel()
     with pytest.raises(NotImplementedError):
         resource.all()
     with pytest.raises(NotImplementedError):
@@ -100,3 +107,11 @@ def test_serialize_many_private():
     result = resource.serialize_many((user1, user2))
     assert result[0]['name'] == user1.name
     assert result[0]['ssn'] == user1.ssn
+
+
+def test_serialize_sub_item():
+    resource = UserResourceSub(private=True)
+    result = resource.serialize(user1)
+    assert result['name'] == user1.name
+    assert result['ssn'] == user1.ssn
+    assert result['sub'] == user1.name

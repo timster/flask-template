@@ -36,4 +36,10 @@ class Resource:
 
     def serialize(self, obj):
         """Serialize the given object to a dictionary representation."""
-        return obj.to_dict(private=self.private)
+        data = obj.to_dict(private=self.private)
+        data.update(self.get_items(obj))
+        return data
+
+    def get_items(self, obj):
+        """Get any sub-items related to the main obj. Will be used to update the returned dict."""
+        return {}

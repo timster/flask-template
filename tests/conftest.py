@@ -56,8 +56,9 @@ class TestClient(FlaskClient):
 def app(tmpdir):
     sqlite_file = str(tmpdir.join('test.sqlite'))
     config = {
-        'DATABASE': 'sqlite:///' + sqlite_file,
         'TESTING': True,
+        'DATABASE': 'sqlite:///' + sqlite_file,
+        'PASSWORD_HASH_METHOD': 'plain',
     }
     app = create_app(config)
     app.test_client_class = TestClient

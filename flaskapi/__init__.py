@@ -164,15 +164,13 @@ def configure_commands(app):
         """List all routes."""
         rule_len = max(len(rule.rule) for rule in app.url_map.iter_rules()) + 3
         endp_len = max(len(rule.endpoint) for rule in app.url_map.iter_rules()) + 3
-
-        line_str = '{:' + str(rule_len) + 's}{:' + str(endp_len) + '}{}'
+        line_str = '{{:{}s}}{{:{}s}}{{}}'.format(rule_len, endp_len)
 
         def get_output():
             for rule in app.url_map.iter_rules():
                 methods = set(rule.methods) - {'HEAD', 'OPTIONS'}
                 line_fmt = (rule.rule, rule.endpoint, ','.join(sorted(methods)))
-                line = line_str.format(*line_fmt)
-                yield line
+                yield line_str.format(*line_fmt)
 
         for line in sorted(get_output()):
-            print(line)
+            click.echo(line)
